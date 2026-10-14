@@ -1,4 +1,4 @@
-
+```groovy
 pipeline {
     agent any
 
@@ -29,7 +29,7 @@ pipeline {
             steps {
                 sh '''
                     set -eu
-                    docker compose build backend frontend
+                    docker compose -p internship build backend frontend
                 '''
             }
         }
@@ -38,7 +38,7 @@ pipeline {
             steps {
                 sh '''
                     set -eu
-                    docker compose up -d backend frontend
+                    docker compose -p internship up -d backend frontend
                 '''
             }
         }
@@ -47,7 +47,7 @@ pipeline {
             steps {
                 sh '''
                     set -eu
-                    docker compose ps
+                    docker compose -p internship ps
                 '''
             }
         }
@@ -67,3 +67,4 @@ pipeline {
         }
     }
 }
+```
