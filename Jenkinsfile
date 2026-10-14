@@ -1,8 +1,13 @@
+
 pipeline {
     agent any
 
-    stages {
+    options {
+        skipDefaultCheckout(true)
+        timeout(time: 20, unit: 'MINUTES')
+    }
 
+    stages {
         stage('Checkout') {
             steps {
                 checkout scm
@@ -12,17 +17,28 @@ pipeline {
         stage('Backend Tests') {
             steps {
                 sh '''
+                    set -eu
                     cd backend
                     chmod +x mvnw
-                    ./mvnw test
+                    ./mvnw -B -ntp test
                 '''
             }
         }
 
-        stage('Build & Deploy') {
+        stage('Build Application Images') {
             steps {
                 sh '''
-                    docker compose up -d --build
+                    set -eu
+                    docker compose build backend frontend
+                '''
+            }
+        }
+
+        stage('Deploy Application') {
+            steps {
+                sh '''
+                    set -eu
+                    docker compose up -d backend frontend
                 '''
             }
         }
@@ -30,6 +46,7 @@ pipeline {
         stage('Verify Deployment') {
             steps {
                 sh '''
+                    set -eu
                     docker compose ps
                 '''
             }
@@ -38,11 +55,15 @@ pipeline {
 
     post {
         success {
-            echo ' Deployment successful!'
+            echo 'Application deployment successful!'
         }
 
         failure {
-            echo ' Deployment failed!'
+            echo 'Pipeline failed. Check the stage logs.'
+        }
+
+        always {
+            echo 'Pipeline execution finished.'
         }
     }
 }
